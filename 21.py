@@ -1,138 +1,44 @@
-import random 
-from PIL import Image, ImageDraw
-import math
-import numpy as np
-import math
+import tensorflow as tf
+from tensorflow.keras import layers, models
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.utils import to_categorical
 
-#mode = int(input('mode:')) #Считываем номер преобразования. 
-#image = Image.open("n\\img0001.png") #Открываем изображение. 
-image = Image.open("output2\\img0001.png") #Открываем изображение. 
-#image = Image.open("smile_py.png") #Открываем изображение. 
-draw = ImageDraw.Draw(image) #Создаем инструмент для рисования. 
-width = image.size[0] #Определяем ширину.
-print(width) 
-height = image.size[1] #Определяем высоту. 	
-print(height)
-pix = image.load() #Выгружаем значения пикселей.
+# Шаг 1: Загрузка данных
+# 1.1. Загрузка данных MNIST
+(train_images, train_labels), (test_images, test_labels) = mnist.load_data()
 
+# 1.2. Подготовка данных
+train_images = train_images.reshape((60000, 28, 28, 1)).astype('float32') / 255
+test_images = test_images.reshape((10000, 28, 28, 1)).astype('float32') / 255
 
+train_labels = to_categorical(train_labels)
+test_labels = to_categorical(test_labels)
 
+# Шаг 2: Создание нейросети
+# 2.1. Импорт библиотек
+model = models.Sequential()
 
-  
-#a.dot(b)
+# 2.2. Создание нейросети
+model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(layers.Conv2D(64, (3, 3), activation='relu'))
+model.add(layers.Flatten())
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(10, activation='softmax'))
 
-a = np.array([ [1,4,6], [5,2,7], [3,9,8] ])
-b = np.array([ [1,4,6], [5,2,7], [3,9,8] ])
+# Шаг 3: Обучение нейросети
+# 3.1. Настройка параметров обучения
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
 
-c = a*b
-#print(c)
+# 3.2. Обучение модели
+model.fit(train_images, train_labels, epochs=5, batch_size=64, validation_split=0.2)
 
+# Шаг 4: Оценка производительности модели
+# 4.1. Оценка на тестовых данных
+test_loss, test_acc = model.evaluate(test_images, test_labels)
 
-
-filtr = np.array([ [1,0,-1], [2,0,-2], [1,0,-1] ])
-
-for j in range(height):
-    for i in range(width):
-        red = pix[i, j][0]
-        green = pix[i, j][1]
-        blue = pix[i, j][2]
-        #print(f"{a},{b},{c}", end=" ")
-        if red<10: print(f"  {red},",end="")
-        elif red>99: print(f"{red},",end="")
-        else: print(f" {red},",end="")
-        #if b<10: print(f"  {b},",end="")
-        #elif b>99: print(f"{b},",end="")
-        #else: print(f" {b},",end="")
-        #if c<10: print(f"  {c},",end="")
-        #elif c>99: print(f"{c},",end="")
-        #else: print(f" {c},",end="")
-    print("")
-
-
-
-
-
-our_step = 3
-
-# Начальные значения
-j = 0
-
-# Внешний цикл
-while j < height-1:
-    i = 0
-
-    # Внутренний цикл
-    while i < width-1:
-        # Ваш код здесь
-        red = pix[i, j][0]
-        #if red<10: print(f"  {red},",end="")
-        #elif red>99: print(f"{red},",end="")
-        #else: print(f" {red},",end="")
-
-        # Увеличиваем счетчик внутреннего цикла на 3
-        i += our_step
-
-    # Увеличиваем счетчик внешнего цикла на 3
-    j += our_step
-    #print("")
-
-
-
-
-
-
-
-
-a = np.array([ [1,4,6], 
-               [5,2,7],
-              [3,9,8] ])
-
-#print(a)
-
-sred = np.mean(a)
-
-#print(sred)
-
-summa=0
-kolvo = 0
-
-for i in a:
-    for j in i:
-        summa+=j
-        kolvo+=1
-
-sred = summa/kolvo
-    
-#print(kolvo)
-#print(summa)
-#print(sred)
-
-result_matrix = np.full((5, 5), sred)
-
-
-pix = image.load()
-
-i=3
-j=3
-
-w = np.array([[pix[i,j][0],pix[i+1,j][0],pix[i+2,j][0]],
-[pix[i,j+1][0],pix[i+1,j+1][0],pix[i+2,j+1][0]],
-[pix[i,j+2][0],pix[i+1,j+2][0],pix[i+2,j+2][0]]])
-
-print(w)
-
-a = np.mean(w)
-
-a = math.floor(a)
-
-print(a)
-
-filtr = np.array([ [1,0,-1], [2,0,-2], [1,0,-1] ])
-
-w*f
-
-
-#def svertka(input_image, core_matrix):
-    
-#filtr = np.array([ [0,0,0], [0,0,0], [0,0,0] ])
-
+print("Точность на тестовых данных:", test_acc)
